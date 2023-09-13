@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const booksController = require('../controllers/booksController'); // Importez le contrôleur
+const bookController = require('../controllers/bookController');
 
-// Routes de Livres (Books)
-router.get('/', booksController.getBooks);
-router.get('/:id', booksController.getBookById);
-router.get('/bestrating', booksController.getBestRatedBooks);
-router.post('/create', booksController.createBook);
-router.put('/:id', booksController.updateBook);
-router.delete('/:id', booksController.deleteBook);
+
+// Routes pour les livres
+router.get('/', bookController.getAllBooks);
+router.get('/:id', bookController.getBookById);
+router.get('/bestrating', bookController.getTopRatedBooks);
 
 module.exports = router;
+
+

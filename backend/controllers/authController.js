@@ -1,48 +1,60 @@
-const User = require('../models/user');
-const bcrypt = require('bcrypt');
+const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv');
+const bcrypt = require('bcrypt');
+const config = require('../config/auth');
 
-dotenv.config(); // Charger les variables d'environnement depuis le fichier .env
-
+// Signup function
 exports.signup = async (req, res) => {
   try {
     const { email, password } = req.body;
+
     // Vérifier si l'utilisateur existe déjà
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'Cet utilisateur existe déjà.' });
     }
+
     // Hacher le mot de passe
     const hashedPassword = await bcrypt.hash(password, 10);
+
     // Créer un nouvel utilisateur
-    const newUser = new User({ email, password: hashedPassword });
+    const newUser = new User({
+      email,
+      password: hashedPassword,
+    });
+
     await newUser.save();
-    res.json({ message: 'Inscription réussie.' });
+
+    res.status(201).json({ message: 'Utilisateur enregistré avec succès.' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Erreur lors de l\'inscription.' });
+    res.status(500).json({ message: "Une erreur s'est produite lors de l'inscription." });
   }
 };
 
+// Login function
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
+
     // Vérifier si l'utilisateur existe
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: 'Identifiants incorrects.' });
     }
+
     // Vérifier le mot de passe
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
       return res.status(401).json({ message: 'Identifiants incorrects.' });
     }
-    // Générer un token JWT en utilisant la clé secrète à partir des variables d'environnement
-    const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, { expiresIn: '24h' });
-    res.json({ userId: user._id, token });
+
+    // Générer un token JWT
+    const token = jwt.sign({ userId: user._id }, config.secretKey, { expiresIn: '1h' });
+
+    res.status(200).json({ userId: user._id, token });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Erreur lors de la connexion.' });
+    res.status(500).json({ message: "Une erreur s'est produite lors de la connexion." });
   }
 };
