@@ -41,6 +41,8 @@ exports.getTopRatedBooks = async (req, res) => {
 // Create a new book
 exports.createBook = async (req, res) => {
   const { title, author, imageUrl, year, genre } = req.body;
+  console.log ("affichageReqBody" + req.body)
+  console.log ("affichageReqBodyBook" + JSON.parse(req.body.book))
 
   try {
     const newBook = new Book({
@@ -54,7 +56,7 @@ exports.createBook = async (req, res) => {
       averageRating: 0,
     });
 
-    await newBook.save();
+    //await newBook.save();
 
     res.status(201).json({ message: 'Livre créé avec succès.' });
   } catch (error) {
