@@ -39,31 +39,38 @@ exports.getTopRatedBooks = async (req, res) => {
 };
 
 // Create a new book
-exports.createBook = async (req, res) => {
+const createBook = async (req, res) => {
   const { title, author, imageUrl, year, genre } = req.body;
-  console.log ("affichageReqBody" + req.body)
-  console.log ("affichageReqBodyBook" + JSON.parse(req.body.book))
+  if (!req.user || !req.user.userId) {
+      return res.status(401).json({ message: 'Authentication required.' });
+  }
+
+  // Log statements for debugging
+  console.log("affichageReqBody:", req.body);
 
   try {
-    const newBook = new Book({
-      userId: req.user.userId, // Utilisez l'ID de l'utilisateur authentifié
-      title,
-      author,
-      imageUrl,
-      year,
-      genre,
-      ratings: [],
-      averageRating: 0,
-    });
+      const newBook = new Book({
+          userId: req.user.userId,
+          title,
+          author,
+          imageUrl,
+          year,
+          genre,
+          ratings: [],
+          averageRating: 0,
+      });
 
-    //await newBook.save();
+      await newBook.save();  // Save the book to the database
 
-    res.status(201).json({ message: 'Livre créé avec succès.' });
+      res.status(201).json({ message: 'Book created successfully!', book: newBook });
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Une erreur s\'est produite lors de la création du livre.' });
+      console.error("Error creating book:", error);
+      res.status(500).json({ message: 'Failed to create book.', error: error.message });
   }
 };
+
+exports.createBook = createBook;
 
 // Update a book by ID
 exports.updateBookById = async (req, res) => {
