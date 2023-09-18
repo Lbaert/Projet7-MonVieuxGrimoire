@@ -107,7 +107,7 @@ function BookForm({ book, validate }) {
           )}
 
         </div>
-        <input {...register('file')} type="file" id="file" />
+        <input {...register('file')} type="file" id="file" name='file'/>
       </label>
       <button type="submit">Publier</button>
     </form>
