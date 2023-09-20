@@ -24,6 +24,7 @@ function Book() {
     async function getItem() {
       const data = await getBook(params.id);
       if (data) {
+        console.log(data);
         setBook(data);
       }
     }

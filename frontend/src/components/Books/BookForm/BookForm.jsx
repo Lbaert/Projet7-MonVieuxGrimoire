@@ -44,6 +44,7 @@ function BookForm({ book, validate }) {
   }, [formState]);
 
   const onSubmit = async (data) => {
+    console.log("ID avant soumission du formulaire :", data.id);
     // When we create a new book
     if (!book) {
       if (!data.file[0]) {

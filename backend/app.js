@@ -6,15 +6,21 @@ const db = require('../backend/config/db');
 const authRoutes = require('../backend/routes/authRoutes');
 const bookRoutes = require('../backend/routes/bookRoutes');
 const bookRoutesSecure = require('../backend/routes/bookRoutesSecure');
+const mongoose = require('mongoose');
+const helmet = require('helmet');
+const path = require('path');
 require('dotenv').config();
-const multer = require('multer');
 
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use('../uploads', express.static('uploads'));
+app.use(helmet());
+app.use(helmet({crossOriginEmbedderPolicy: false }));
+app.use(helmet({crossOriginResourcePolicy: {policy: "same-site"} }));
+app.use('/images', express.static(path.join(__dirname, 'images')));
+
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -22,17 +28,6 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
   next();
 });
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, '../uploads'); // Indiquez le répertoire où vous souhaitez stocker les fichiers
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname); // Nommez les fichiers téléchargés
-  }
-});
-
-const upload = multer({ storage: storage });
 
 // Use authentication routes
 app.use('/api/auth', authRoutes);

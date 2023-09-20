@@ -1,4 +1,7 @@
 const Book = require('../models/Book');
+const path = require('path');
+const fs = require('fs');
+
 
 // Get all books
 exports.getAllBooks = async (req, res) => {
@@ -40,11 +43,23 @@ exports.getTopRatedBooks = async (req, res) => {
 
 // Create a new book
 const createBook = async (req, res) => {
-  const { title, author, imageUrl, year, genre } = req.body;
+  const bookData = JSON.parse(req.body.book);
+  const { title, author, year, genre } = bookData;
+
   if (!req.user || !req.user.userId) {
       return res.status(401).json({ message: 'Authentication required.' });
   }
 
+  // Obtenez le nom du fichier image depuis la requête
+  const imageFile = req.file; // Assurez-vous que multer a été configuré pour gérer les fichiers image
+
+  // Vérifiez si une image a été téléchargée
+  if (!imageFile) {
+    return res.status(400).json({ message: 'Veuillez télécharger une image.' });
+  }
+
+  // Construisez l'URL complète de l'image en utilisant le chemin du dossier 'images' du backend
+  const imageUrl = `http://localhost:4000/images/${imageFile.filename}`;
   // Log statements for debugging
   console.log("affichageReqBody:", req.body);
 
@@ -119,7 +134,21 @@ exports.deleteBookById = async (req, res) => {
       return res.status(403).json({ message: 'Accès non autorisé.' });
     }
 
-    await book.remove();
+    // Obtenez le chemin de l'image du livre
+    const imagePath = book.imageUrl;
+
+    await Book.deleteOne({ _id: id }); // Supprimez le livre de la base de données
+
+// Supprimez le fichier image du serveur
+  if (imagePath) {
+    const imagePathParts = imagePath.split('/');
+    const imageName = imagePathParts[imagePathParts.length - 1];
+    const imageFilePath = path.join(__dirname, '../images', imageName); // Assurez-vous que le chemin est correct
+
+    // Utilisez fs.unlinkSync pour supprimer le fichier image
+    fs.unlinkSync(imageFilePath);
+  }
+
 
     res.status(200).json({ message: 'Livre supprimé avec succès.' });
   } catch (error) {
@@ -127,6 +156,8 @@ exports.deleteBookById = async (req, res) => {
     res.status(500).json({ message: 'Une erreur s\'est produite lors de la suppression du livre.' });
   }
 };
+
+
 
 // Rate a book
 exports.rateBook = async (req, res) => {
@@ -142,26 +173,34 @@ exports.rateBook = async (req, res) => {
     // Vérifiez si l'utilisateur a déjà noté ce livre
     const existingRating = book.ratings.find((r) => r.userId === userId);
     if (existingRating) {
-      return res.status(400).json({ message: 'Vous avez déjà noté ce livre.' });
+      // Si l'utilisateur a déjà noté le livre, mettez à jour sa notation existante
+      existingRating.grade = rating;
+    } else {
+      // Sinon, ajoutez une nouvelle notation
+      book.ratings.push({ userId, grade: rating });
     }
-
-    // Vérifiez que la note est entre 0 et 5
-    if (rating < 0 || rating > 5) {
-      return res.status(400).json({ message: 'La note doit être comprise entre 0 et 5.' });
-    }
-
-    // Ajoutez la nouvelle note à la liste des notations
-    book.ratings.push({ userId, grade: rating });
 
     // Calculez la nouvelle note moyenne
     const totalRatings = book.ratings.reduce((sum, r) => sum + r.grade, 0);
     book.averageRating = totalRatings / book.ratings.length;
 
+    // Log pour vérifier le contenu de book
+    console.log('Contenu de book :', book);
+
+    // Sauvegardez les modifications du livre
     await book.save();
 
-    res.status(200).json({ message: 'Livre noté avec succès.', book });
+    // Renvoyez la réponse avec l'`id` du livre inclus
+    res.status(200).json({
+      message: 'Livre noté avec succès.',
+      ratings: book.ratings,
+      averageRating: book.averageRating,
+      id: book._id, // Inclure l'`id` du livre
+    });
+    
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Une erreur s\'est produite lors de la notation du livre.' });
   }
 };
+
