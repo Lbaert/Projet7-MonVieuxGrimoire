@@ -51,26 +51,76 @@ exports.getTopRatedBooks = async (req, res) => {
 };
 
 // Create a new book
+//const createBook = async (req, res) => {
+//const bookData = JSON.parse(req.body.book);
+//const { title, author, year, genre } = bookData;
+
+//if (!req.user || !req.user.userId) {
+//return res.status(401).json({ message: "Authentication required." });
+//}
+
+// Obtenez le nom du fichier image depuis la requête
+//const imageFile = req.file; // Assurez-vous que multer a été configuré pour gérer les fichiers image
+
+// Vérifiez si une image a été téléchargée
+//if (!imageFile) {
+//return res.status(400).json({ message: "Veuillez télécharger une image." });
+//}
+
+// Construisez l'URL complète de l'image en utilisant le chemin du dossier 'images' du backend
+//const imageUrl = `http://localhost:4000/images/${imageFile.filename}`;
+// Log statements for debugging
+//console.log("affichageReqBody:", req.body);
+
+//try {
+//const newBook = new Book({
+//userId: req.user.userId,
+//title,
+//author,
+//imageUrl,
+//year,
+//genre,
+//ratings: [],
+//averageRating: 0,
+//});
+
+//await newBook.save(); // Save the book to the database
+
+//res
+//.status(201)
+//.json({ message: "Book created successfully!", book: newBook });
+//} catch (error) {
+//console.error("Error creating book:", error);
+//res
+//.status(500)
+//.json({ message: "Failed to create book.", error: error.message });
+//}
+//};
+
 const createBook = async (req, res) => {
-  const bookData = JSON.parse(req.body.book);
+  let bookData;
+  try {
+    bookData = JSON.parse(req.body.book);
+  } catch (error) {
+    return res.status(400).json({ message: "Invalid book data format." });
+  }
+
   const { title, author, year, genre } = bookData;
 
-  if (!req.user || !req.user.userId) {
-    return res.status(401).json({ message: "Authentication required." });
-  }
+  // if (!title || !author) {
+  //return res.status(400).json({ message: "Title and author are required." });
+  //}
 
-  // Obtenez le nom du fichier image depuis la requête
-  const imageFile = req.file; // Assurez-vous que multer a été configuré pour gérer les fichiers image
+  //if (!req.user || !req.user.userId) {
+  //return res.status(401).json({ message: "Authentication required." });
+  //}
 
-  // Vérifiez si une image a été téléchargée
-  if (!imageFile) {
-    return res.status(400).json({ message: "Veuillez télécharger une image." });
-  }
+  const imageFile = req.file;
+  //if (!imageFile) {
+  //return res.status(400).json({ message: "Please upload an image." });
+  //}
 
-  // Construisez l'URL complète de l'image en utilisant le chemin du dossier 'images' du backend
   const imageUrl = `http://localhost:4000/images/${imageFile.filename}`;
-  // Log statements for debugging
-  console.log("affichageReqBody:", req.body);
 
   try {
     const newBook = new Book({
@@ -84,8 +134,7 @@ const createBook = async (req, res) => {
       averageRating: 0,
     });
 
-    await newBook.save(); // Save the book to the database
-
+    await newBook.save();
     res
       .status(201)
       .json({ message: "Book created successfully!", book: newBook });
@@ -115,20 +164,19 @@ exports.updateBookById = async (req, res) => {
       return res.status(403).json({ message: "Accès non autorisé." });
     }
 
-    // Vérifiez si une nouvelle image a été téléchargée
+    let imageUrl = book.imageUrl;
     const newImageFile = req.file;
-    console.log("New Image File:", newImageFile);
+
     if (newImageFile) {
-      // Ajoutez un timestamp à l'URL de l'image pour éviter la mise en cache
       const timestamp = Date.now();
-      book.imageUrl = `http://localhost:4000/images/${newImageFile.filename}?timestamp=${timestamp}`;
+      imageUrl = `http://localhost:4000/images/${newImageFile.filename}`;
     }
 
-    // Mettez à jour les autres propriétés du livre
     book.title = title || book.title;
     book.author = author || book.author;
-    book.year = year;
-    book.genre = genre;
+    book.year = year || book.year;
+    book.genre = genre || book.genre;
+    book.imageUrl = imageUrl;
 
     await book.save();
 

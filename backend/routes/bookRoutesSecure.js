@@ -9,7 +9,7 @@ router.use(authMiddleware.authenticateUser);
 
 // Routes pour les livres
 router.post("/", multer, bookController.createBook);
-router.put("/:id", bookController.updateBookById);
+router.put("/:id", multer, bookController.updateBookById);
 router.delete("/:id", bookController.deleteBookById);
 router.post("/:id/rating", bookController.rateBook);
 
