@@ -10,16 +10,16 @@ import AddBook from "./pages/AddBook/AddBook";
 import UpdateBook from "./pages/updateBook/UpdateBook";
 import { useUser } from "./lib/customHooks";
 import ScrollToTop from "./components/ScrollToTop/ScrollToTop";
-import { useLocation } from "react-router-dom";
+//import { useLocation } from "react-router-dom";
 
 function App() {
   const [user, setUser] = useState(null);
   const { connectedUser } = useUser();
-  const location = useLocation();
-  const currentPath = location.pathname;
+  //const location = useLocation();
+  //const currentPath = location.pathname;
 
   // Déterminez si le Header doit être affiché en fonction de l'URL actuelle
-  const showHeader = currentPath !== "/Connexion";
+  //const showHeader = currentPath !== "/Connexion";
 
   useEffect(() => {
     setUser(connectedUser);
@@ -29,9 +29,7 @@ function App() {
     <BrowserRouter>
       <div>
         <ScrollToTop />
-        {showHeader && (
-          <Header user={user} setUser={setUser} currentPath={currentPath} />
-        )}
+        <Header user={user} setUser={setUser} />
         <Routes>
           <Route index element={<Home />} />
           <Route

@@ -233,6 +233,10 @@ exports.rateBook = async (req, res) => {
   const { id } = req.params;
   const { userId, rating } = req.body;
 
+  // Avant la récupération du livre
+console.log("Book ID:", id);
+const book = await Book.findById(id);
+
   try {
     const book = await Book.findById(id);
     if (!book) {
@@ -252,6 +256,10 @@ exports.rateBook = async (req, res) => {
     // Calculez la nouvelle note moyenne
     const totalRatings = book.ratings.reduce((sum, r) => sum + r.grade, 0);
     book.averageRating = totalRatings / book.ratings.length;
+
+        // Affichez les valeurs pour déboguer
+        console.log("ratings:", book.ratings);
+        console.log("averageRating:", book.averageRating);
 
     // Sauvegardez les modifications du livre
     await book.save();
