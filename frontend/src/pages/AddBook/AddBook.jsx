@@ -11,6 +11,8 @@ function AddBook() {
   const navigate = useNavigate();
   const { connectedUser, auth, userLoading } = useUser();
   const [created, setCreated] = useState(false);
+  const [addedBookInfo, setAddedBookInfo] = useState(null);
+
   useEffect(() => {
     if (!userLoading) {
       if (!connectedUser || !auth) {
@@ -19,6 +21,13 @@ function AddBook() {
     }
   }, [userLoading]);
 
+  useEffect(() => {
+    if (created && addedBookInfo) {
+      // Ajouter le console.log ici pour afficher les informations du livre
+      console.log('Informations du livre ajouté :', addedBookInfo);
+    }
+  }, [created, addedBookInfo]);
+
   return (
     <div className="content-container">
       <BackArrow />
@@ -26,19 +35,25 @@ function AddBook() {
         {!created ? (
           <>
             <h1>Ajouter un livre</h1>
-            <p>tous les champs sont obligatoires</p>
-            <BookForm validate={setCreated} />
+            <p>Tous les champs sont obligatoires</p>
+            {/* Passer une fonction pour mettre à jour addedBookInfo lors de l'ajout du livre */}
+            <BookForm
+              validate={(bookInfo) => {
+                setAddedBookInfo(bookInfo);
+                setCreated(true);
+              }}
+            />
           </>
         ) : (
           <div className={styles.Created}>
             <h1>Merci!</h1>
-            <p>votre livre a bien été publié</p>
+            <p>Votre livre a bien été publié</p>
             <img src={bookAdd} alt="Livre ajouté" />
-            <Link to="/" className="button">Retour à l&apos;accueil</Link>
+            <Link to="/" className="button">
+              Retour à l&apos;accueil
+            </Link>
           </div>
-
         )}
-
       </div>
     </div>
   );

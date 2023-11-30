@@ -50,53 +50,6 @@ exports.getTopRatedBooks = async (req, res) => {
   }
 };
 
-// Create a new book
-//const createBook = async (req, res) => {
-//const bookData = JSON.parse(req.body.book);
-//const { title, author, year, genre } = bookData;
-
-//if (!req.user || !req.user.userId) {
-//return res.status(401).json({ message: "Authentication required." });
-//}
-
-// Obtenez le nom du fichier image depuis la requête
-//const imageFile = req.file; // Assurez-vous que multer a été configuré pour gérer les fichiers image
-
-// Vérifiez si une image a été téléchargée
-//if (!imageFile) {
-//return res.status(400).json({ message: "Veuillez télécharger une image." });
-//}
-
-// Construisez l'URL complète de l'image en utilisant le chemin du dossier 'images' du backend
-//const imageUrl = `http://localhost:4000/images/${imageFile.filename}`;
-// Log statements for debugging
-//console.log("affichageReqBody:", req.body);
-
-//try {
-//const newBook = new Book({
-//userId: req.user.userId,
-//title,
-//author,
-//imageUrl,
-//year,
-//genre,
-//ratings: [],
-//averageRating: 0,
-//});
-
-//await newBook.save(); // Save the book to the database
-
-//res
-//.status(201)
-//.json({ message: "Book created successfully!", book: newBook });
-//} catch (error) {
-//console.error("Error creating book:", error);
-//res
-//.status(500)
-//.json({ message: "Failed to create book.", error: error.message });
-//}
-//};
-
 const createBook = async (req, res) => {
   let bookData;
   try {
@@ -105,33 +58,26 @@ const createBook = async (req, res) => {
     return res.status(400).json({ message: "Invalid book data format." });
   }
 
-  const { title, author, year, genre } = bookData;
+  const { title, author, year, genre, ratings } = bookData;
+  const userId = req.user.userId;
 
-  // if (!title || !author) {
-  //return res.status(400).json({ message: "Title and author are required." });
-  //}
+  // Check if ratings array is provided
+  const averageRating = ratings
+    ? ratings.reduce((sum, r) => sum + r.grade, 0) / ratings.length
+    : 0;
 
-  //if (!req.user || !req.user.userId) {
-  //return res.status(401).json({ message: "Authentication required." });
-  //}
-
-  const imageFile = req.file;
-  //if (!imageFile) {
-  //return res.status(400).json({ message: "Please upload an image." });
-  //}
-
-  const imageUrl = `http://localhost:4000/images/${imageFile.filename}`;
+  const imageUrl = `http://localhost:4000/images/${req.file.filename}`;
 
   try {
     const newBook = new Book({
-      userId: req.user.userId,
+      userId,
       title,
       author,
       imageUrl,
       year,
       genre,
-      ratings: [],
-      averageRating: 0,
+      ratings: ratings || [], // If ratings array is provided, use it, otherwise use an empty array
+      averageRating,
     });
 
     await newBook.save();
@@ -151,7 +97,8 @@ exports.createBook = createBook;
 // Update a book by ID
 exports.updateBookById = async (req, res) => {
   const { id } = req.params;
-  const { title, author, year, genre } = req.body;
+  const { book } = req.body; // Utilisez la propriété 'book' pour extraire les valeurs
+  const { title, author, year, genre } = JSON.parse(book);  
 
   try {
     const book = await Book.findById(id);
@@ -159,10 +106,16 @@ exports.updateBookById = async (req, res) => {
       return res.status(404).json({ message: "Livre introuvable." });
     }
 
+    // Log des détails actuels du livre
+    console.log("Existing Book Details:", book);
+
     // Vérifiez si l'utilisateur est le propriétaire du livre
     if (book.userId !== req.user.userId) {
       return res.status(403).json({ message: "Accès non autorisé." });
     }
+
+    // Vérifiez également les valeurs reçues dans la requête
+    console.log("Received Book Update Values:", req.body);
 
     let imageUrl = book.imageUrl;
     const newImageFile = req.file;
@@ -179,6 +132,9 @@ exports.updateBookById = async (req, res) => {
     book.imageUrl = imageUrl;
 
     await book.save();
+
+    // Log des détails mis à jour du livre
+    console.log("Updated Book Details:", book);
 
     res.status(200).json({ message: "Livre mis à jour avec succès." });
   } catch (error) {

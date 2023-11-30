@@ -115,6 +115,8 @@ export async function rateBook(id, userId, rating) {
 
 export async function addBook(data) {
   const userId = localStorage.getItem('userId');
+  const ratingValue = data.rating ? parseInt(data.rating, 10) : 0;
+
   const book = {
     userId,
     title: data.title,
@@ -123,16 +125,19 @@ export async function addBook(data) {
     genre: data.genre,
     ratings: [{
       userId,
-      grade: data.rating ? parseInt(data.rating, 10) : 0,
+      grade: ratingValue,
     }],
-    averageRating: parseInt(data.rating, 10),
+    averageRating: ratingValue,
   };
+
+  console.log('Book object before sending:', book);
+
   const bodyFormData = new FormData();
   bodyFormData.append('book', JSON.stringify(book));
   bodyFormData.append('image', data.file[0]);
 
   try {
-    return await axios({
+    const response = await axios({
       method: 'post',
       url: `${API_ROUTES.BOOKS}`,
       data: bodyFormData,
@@ -140,6 +145,10 @@ export async function addBook(data) {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     });
+
+    console.log('Response from server:', response.data);
+
+    return response.data;
   } catch (err) {
     console.error(err);
     return { error: true, message: err.message };
@@ -149,7 +158,6 @@ export async function addBook(data) {
 export async function updateBook(data, id) {
   const userId = localStorage.getItem('userId');
 
-  let newData;
   const book = {
     userId,
     title: data.title,
@@ -157,17 +165,16 @@ export async function updateBook(data, id) {
     year: data.year,
     genre: data.genre,
   };
-  console.log(data.file[0]);
+
+  const newData = new FormData();
+  newData.append('book', JSON.stringify(book));
+
   if (data.file[0]) {
-    newData = new FormData();
-    newData.append('book', JSON.stringify(book));
     newData.append('image', data.file[0]);
-  } else {
-    newData = { ...book };
   }
 
   try {
-    const newBook = await axios({
+    const updatedBook = await axios({
       method: 'put',
       url: `${API_ROUTES.BOOKS}/${id}`,
       data: newData,
@@ -175,7 +182,8 @@ export async function updateBook(data, id) {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     });
-    return newBook;
+
+    return updatedBook.data;
   } catch (err) {
     console.error(err);
     return { error: true, message: err.message };

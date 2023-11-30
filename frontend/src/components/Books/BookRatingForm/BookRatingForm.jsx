@@ -16,22 +16,26 @@ function BookRatingForm({
   const { register, formState, handleSubmit } = useForm({
     mode: 'onChange',
     defaultValues: {
-      rating: 0,
+      rating,
     },
   });
+
   useEffect(() => {
     if (formState.dirtyFields.rating) {
       const rate = document.querySelector('input[name="rating"]:checked').value;
       setRating(parseInt(rate, 10));
       formState.dirtyFields.rating = false;
     }
-  }, [formState]);
+  }, [formState, setRating]);
+
   const onSubmit = async () => {
     if (!connectedUser || !auth) {
       navigate(APP_ROUTES.SIGN_IN);
     }
+
     const update = await rateBook(id, userId, rating);
     console.log(update);
+
     if (update) {
       // eslint-disable-next-line no-underscore-dangle
       setBook({ ...update, id: update._id });
@@ -39,6 +43,7 @@ function BookRatingForm({
       alert(update);
     }
   };
+
   return (
     <div className={styles.BookRatingForm}>
       <form onSubmit={handleSubmit(onSubmit)}>
