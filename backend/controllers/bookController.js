@@ -1,5 +1,5 @@
 const Book = require("../models/Book");
-const multer = require("../middlewares/multer");
+const multerMiddleware = require("../middlewares/multer");
 const path = require("path");
 const fs = require("fs");
 
@@ -76,7 +76,7 @@ const createBook = async (req, res) => {
       imageUrl,
       year,
       genre,
-      ratings: ratings || [], // If ratings array is provided, use it, otherwise use an empty array
+      ratings: ratings || [], 
       averageRating,
     });
 
@@ -92,7 +92,14 @@ const createBook = async (req, res) => {
   }
 };
 
-exports.createBook = createBook;
+exports.createBook = [
+  // Utilisez Multer comme middleware pour gérer le téléchargement et la compression de l'image
+  multerMiddleware,
+  // Utilisez createBook pour le reste du traitement de la création du livre
+  async (req, res) => {
+    // ... (Votre code existant pour la création de livre)
+  }
+];
 
 // Update a book by ID
 exports.updateBookById = async (req, res) => {
