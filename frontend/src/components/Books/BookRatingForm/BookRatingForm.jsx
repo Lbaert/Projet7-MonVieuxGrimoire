@@ -16,7 +16,7 @@ function BookRatingForm({
   const { register, formState, handleSubmit } = useForm({
     mode: 'onChange',
     defaultValues: {
-      rating,
+      rating: 0,
     },
   });
 
@@ -26,7 +26,7 @@ function BookRatingForm({
       setRating(parseInt(rate, 10));
       formState.dirtyFields.rating = false;
     }
-  }, [formState, setRating]);
+  }, [formState]);
 
   const onSubmit = async () => {
     if (!connectedUser || !auth) {
@@ -67,3 +67,4 @@ BookRatingForm.propTypes = {
 };
 
 export default BookRatingForm;
+

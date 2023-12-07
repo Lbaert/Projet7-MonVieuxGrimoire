@@ -20,12 +20,10 @@ function Book() {
 
   const params = useParams();
 
-  // Après avoir obtenu les détails du livre
   useEffect(() => {
     async function getItem() {
       const data = await getBook(params.id);
       if (data) {
-        console.log(data); // Afficher les détails du livre lorsque la page est chargée
         setBook(data);
       }
     }
@@ -33,7 +31,6 @@ function Book() {
   }, [params.id]);
 
   useEffect(() => {
-    console.log(book);
     if (!userLoading && connectedUser && book?.title) {
       const rate = book.ratings.find((elt) => elt.userId === connectedUser.userId);
       if (rate) {

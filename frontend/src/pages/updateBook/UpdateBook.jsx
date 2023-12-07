@@ -35,22 +35,20 @@ function UpdateBook() {
     <div className="content-container">
       <BackArrow />
       <div className={styles.Container}>
-        <div className={created ? styles.Created : ''}>
-          {!created ? (
-            <>
-              <h1>Modifier votre livre</h1>
-              <p>Vous pouvez modifier tous les champs sauf la note donnée</p>
-              <BookForm book={book} validate={setCreated} />
-            </>
-          ) : (
-            <>
-              <h1>Merci!</h1>
-              <p>votre livre a bien été mis à jour</p>
-              <img src={bookAdd} alt="Livre mis à jour" />
-              <Link to="/" className="button">Retour à l&apos;accueil</Link>
-            </>
-          )}
-        </div>
+        {!created ? (
+          <>
+            <h1>Modifier votre livre</h1>
+            <p>Vous pouvez modifier tous les champs sauf la note donnée</p>
+            <BookForm book={book} validate={setCreated} />
+          </>
+        ) : (
+          <div className={styles.Created}>
+            <h1>Merci!</h1>
+            <p>votre livre a bien été mis à jour</p>
+            <img src={bookAdd} alt="Livre mis à jour" />
+            <Link to="/" className="button">Retour à l&apos;accueil</Link>
+          </div>
+        )}
       </div>
     </div>
   );

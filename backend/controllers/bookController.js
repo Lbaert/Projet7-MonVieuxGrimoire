@@ -97,8 +97,7 @@ exports.createBook = createBook;
 // Update a book by ID
 exports.updateBookById = async (req, res) => {
   const { id } = req.params;
-  const { book } = req.body; // Utilisez la propriété 'book' pour extraire les valeurs
-  const { title, author, year, genre } = JSON.parse(book);  
+  const { title, author, year, genre } = req.body;
 
   try {
     const book = await Book.findById(id);
