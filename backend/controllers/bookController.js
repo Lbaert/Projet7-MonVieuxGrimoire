@@ -1,6 +1,7 @@
 const Book = require("../models/Book");
-const multerMiddleware = require("../middlewares/multer");
+const webp = require("webp-converter");
 const path = require("path");
+const sharp = require("sharp");
 const fs = require("fs");
 
 // Get all books
@@ -50,6 +51,8 @@ exports.getTopRatedBooks = async (req, res) => {
   }
 };
 
+
+// create book
 const createBook = async (req, res) => {
   let bookData;
   try {
@@ -66,7 +69,34 @@ const createBook = async (req, res) => {
     ? ratings.reduce((sum, r) => sum + r.grade, 0) / ratings.length
     : 0;
 
+  // Obtenez le chemin de l'image téléchargée
+  const imagePath = req.file.path;
+
+  // Log de la taille de l'image d'origine
+  const originalSize = fs.statSync(imagePath).size;
+  console.log("Taille de l'image d'origine :", originalSize, "octets");
+
+// Déplacez l'image originale vers le dossier "images"
+const originalImagePath = path.join(__dirname, "../images", req.file.filename);
+fs.renameSync(imagePath, originalImagePath);
+
+// Déplacez l'image compressée en JPEG
+const compressedImagePath = `${originalImagePath.split(".")[0]}_compressed.jpg`;
+await sharp(originalImagePath).jpeg({ quality: 80 }).toFile(compressedImagePath);
+
+// Déplacez l'image compressée en WebP
+const webpImagePath = `${originalImagePath.split(".")[0]}_compressed.webp`;
+await webp.cwebp(compressedImagePath, webpImagePath, "-q 80");
+
+  // Log de la taille de l'image compressée en WebP
+  const webpSize = fs.statSync(webpImagePath).size;
+  console.log("Taille de l'image compressée en WebP :", webpSize, "octets");
+
   const imageUrl = `http://localhost:4000/images/${req.file.filename}`;
+
+  console.log("Chemin de l'image originale :", imagePath);
+console.log("Chemin de l'image compressée en JPEG :", compressedImagePath);
+console.log("Chemin de l'image compressée en WebP :", webpImagePath);
 
   try {
     const newBook = new Book({
@@ -76,30 +106,26 @@ const createBook = async (req, res) => {
       imageUrl,
       year,
       genre,
-      ratings: ratings || [], 
+      ratings: ratings || [],
       averageRating,
     });
 
     await newBook.save();
-    res
-      .status(201)
-      .json({ message: "Book created successfully!", book: newBook });
+
+    res.status(201).json({
+      message: "Livre créé avec succès !",
+      book: newBook,
+    });
   } catch (error) {
-    console.error("Error creating book:", error);
-    res
-      .status(500)
-      .json({ message: "Failed to create book.", error: error.message });
+    console.error("Erreur lors de la création du livre :", error);
+    res.status(500).json({
+      message: "Échec de la création du livre.",
+      error: error.message,
+    });
   }
 };
 
-exports.createBook = [
-  // Utilisez Multer comme middleware pour gérer le téléchargement et la compression de l'image
-  multerMiddleware,
-  // Utilisez createBook pour le reste du traitement de la création du livre
-  async (req, res) => {
-    // ... (Votre code existant pour la création de livre)
-  }
-];
+exports.createBook = createBook;
 
 // Update a book by ID
 exports.updateBookById = async (req, res) => {
