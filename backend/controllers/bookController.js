@@ -158,6 +158,28 @@ exports.updateBookById = async (req, res) => {
     if (newImageFile) {
       const timestamp = Date.now();
       imageUrl = `http://localhost:4000/images/${newImageFile.filename}`;
+
+      // Obtenez le chemin de la nouvelle image téléchargée
+      const imagePath = newImageFile.path;
+
+      // Déplacez l'image compressée en WebP
+      const webpImagePath = `${imagePath.split(".")[0]}.webp`;
+      await sharp(imagePath).jpeg({ quality: 10 }).toFile(webpImagePath);
+
+      // Obtenez la taille de la nouvelle image compressée en WebP
+      const webpSize = fs.statSync(webpImagePath).size;
+      console.log("Taille de la nouvelle image compressée en WebP :", webpSize, "octets");
+
+      // Supprimez l'image originale de manière asynchrone
+      try {
+        await fs.promises.unlink(imagePath);
+      } catch (error) {
+        console.error("Erreur lors de la suppression de l'image originale :", error);
+      }
+
+      // Mettez à jour l'URL de l'image avec la nouvelle URL WebP
+      imageUrl = `http://localhost:4000/images/${newImageFile.filename.split(".")[0]}.webp`;
+      console.log("Nouvelle image URL envoyée au frontend :", imageUrl);
     }
 
     book.title = title || book.title;
@@ -179,6 +201,7 @@ exports.updateBookById = async (req, res) => {
     });
   }
 };
+
 
 // Delete a book by ID
 exports.deleteBookById = async (req, res) => {
@@ -208,6 +231,11 @@ exports.deleteBookById = async (req, res) => {
 
       // Utilisez fs.unlinkSync pour supprimer le fichier image
       fs.unlinkSync(imageFilePath);
+
+      console.log(`Livre avec ID ${id} supprimé avec succès.`);
+      console.log(`Image ${imageName} utilisée par le livre supprimée avec succès.`);
+    } else {
+      console.log(`Livre avec ID ${id} supprimé avec succès, mais aucune image associée.`);
     }
 
     res.status(200).json({ message: "Livre supprimé avec succès." });
@@ -218,6 +246,7 @@ exports.deleteBookById = async (req, res) => {
     });
   }
 };
+
 
 // Rate a book
 exports.rateBook = async (req, res) => {
