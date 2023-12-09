@@ -82,14 +82,20 @@ const originalImagePath = path.join(__dirname, "../images", originalFileName);
 
 // Déplacez l'image compressée en WebP
 const webpImagePath = `${originalImagePath.split(".")[0]}.webp`;
-await sharp(imagePath).webp({ quality: 20 }).toFile(webpImagePath);
+await sharp(imagePath).jpeg({ quality: 10 }).toFile(webpImagePath);
 
 // Obtenez la taille de l'image compressée en WebP
 const webpSize = fs.statSync(webpImagePath).size;
 console.log("Taille de l'image compressée en WebP :", webpSize, "octets");
 
-// Vous pouvez également supprimer l'image originale si nécessaire
- fs.unlinkSync(imagePath);
+// Supprimer l'image originale de manière asynchrone
+try {
+  await fs.promises.unlink(imagePath);
+} catch (error) {
+  console.error("Erreur lors de la suppression de l'image originale :", error);
+}
+
+
 
  const imageUrl = `http://localhost:4000/images/${req.file.filename.split(".")[0]}.webp`;
  console.log("Image URL sent to frontend:", imageUrl);
