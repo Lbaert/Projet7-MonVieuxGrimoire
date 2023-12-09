@@ -69,34 +69,31 @@ const createBook = async (req, res) => {
     ? ratings.reduce((sum, r) => sum + r.grade, 0) / ratings.length
     : 0;
 
-  // Obtenez le chemin de l'image téléchargée
-  const imagePath = req.file.path;
+ // Obtenez le chemin de l'image téléchargée
+const imagePath = req.file.path;
 
-  // Log de la taille de l'image d'origine
-  const originalSize = fs.statSync(imagePath).size;
-  console.log("Taille de l'image d'origine :", originalSize, "octets");
+// Log de la taille de l'image d'origine
+const originalSize = fs.statSync(imagePath).size;
+console.log("Taille de l'image d'origine :", originalSize, "octets");
 
 // Déplacez l'image originale vers le dossier "images"
-const originalImagePath = path.join(__dirname, "../images", req.file.filename);
-fs.renameSync(imagePath, originalImagePath);
-
-// Déplacez l'image compressée en JPEG
-const compressedImagePath = `${originalImagePath.split(".")[0]}_compressed.jpg`;
-await sharp(originalImagePath).jpeg({ quality: 80 }).toFile(compressedImagePath);
+const originalFileName = req.file.filename;
+const originalImagePath = path.join(__dirname, "../images", originalFileName);
 
 // Déplacez l'image compressée en WebP
-const webpImagePath = `${originalImagePath.split(".")[0]}_compressed.webp`;
-await webp.cwebp(compressedImagePath, webpImagePath, "-q 80");
+const webpImagePath = `${originalImagePath.split(".")[0]}.webp`;
+await sharp(imagePath).webp({ quality: 20 }).toFile(webpImagePath);
 
-  // Log de la taille de l'image compressée en WebP
-  const webpSize = fs.statSync(webpImagePath).size;
-  console.log("Taille de l'image compressée en WebP :", webpSize, "octets");
+// Obtenez la taille de l'image compressée en WebP
+const webpSize = fs.statSync(webpImagePath).size;
+console.log("Taille de l'image compressée en WebP :", webpSize, "octets");
 
-  const imageUrl = `http://localhost:4000/images/${req.file.filename}`;
+// Vous pouvez également supprimer l'image originale si nécessaire
+ fs.unlinkSync(imagePath);
 
-  console.log("Chemin de l'image originale :", imagePath);
-console.log("Chemin de l'image compressée en JPEG :", compressedImagePath);
-console.log("Chemin de l'image compressée en WebP :", webpImagePath);
+ const imageUrl = `http://localhost:4000/images/${req.file.filename.split(".")[0]}.webp`;
+ console.log("Image URL sent to frontend:", imageUrl);
+
 
   try {
     const newBook = new Book({
