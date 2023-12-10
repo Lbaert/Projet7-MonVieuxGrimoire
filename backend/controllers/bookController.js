@@ -156,6 +156,17 @@ exports.updateBookById = async (req, res) => {
     const newImageFile = req.file;
 
     if (newImageFile) {
+      // Obtenez le chemin de l'ancienne image
+      const oldImagePath = book.imageUrl.replace('http://localhost:4000', '.');
+
+      // Supprimez l'ancienne image de manière asynchrone
+      try {
+        await fs.promises.unlink(oldImagePath);
+        console.log(`Ancienne image ${oldImagePath} supprimée avec succès.`);
+      } catch (error) {
+        console.error("Erreur lors de la suppression de l'ancienne image :", error);
+      }
+
       const timestamp = Date.now();
       imageUrl = `http://localhost:4000/images/${newImageFile.filename}`;
 
