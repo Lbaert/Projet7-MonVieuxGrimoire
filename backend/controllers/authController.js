@@ -10,7 +10,7 @@ const isEmailValid = (email) => {
   return emailRegex.test(email);
 };
 
-// Signup function
+// Fonction d'inscription
 exports.signup = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -59,7 +59,7 @@ exports.signup = async (req, res) => {
   }
 };
 
-// Login function
+// Fonction de connexion
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
