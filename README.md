@@ -1,6 +1,7 @@
 # Projet 7 OpenClassrooms : Mon Vieux Grimoire
 
-![Mon Vieux Grimoire Image](lien_vers_image.jpg)
+<img src="https://github.com/Lbaert/Projet7-MonVieuxGrimoire/assets/88725071/0a34aa3d-fe59-421a-b696-5bc77660e517">
+
 
 ## Description
 
